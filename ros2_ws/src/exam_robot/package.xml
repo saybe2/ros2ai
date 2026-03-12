@@ -4,7 +4,7 @@
   <name>exam_robot</name>
   <version>0.0.1</version>
   <description>Exam package with basic ROS 2 robot nodes.</description>
-  <maintainer email="student@example.com">student</maintainer>
+  <maintainer email="admin@iamanerd.ru">saybe</maintainer>
   <license>Apache-2.0</license>
 
   <depend>rclpy</depend>
@@ -19,4 +19,3 @@
     <build_type>ament_python</build_type>
   </export>
 </package>
-
