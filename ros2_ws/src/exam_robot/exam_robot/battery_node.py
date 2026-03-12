@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 
 import rclpy
 from rclpy.node import Node
@@ -11,13 +11,21 @@ class BatteryNode(Node):
         self.level = 100.0
         self.next_log_level = 90.0
 
+        self.declare_parameter("discharge_rate", 1.0)
+        self.discharge_rate = float(self.get_parameter("discharge_rate").value)
+        if self.discharge_rate < 0.0:
+            self.get_logger().warning("discharge_rate < 0.0, reset to 0.0")
+            self.discharge_rate = 0.0
+
         self.publisher = self.create_publisher(Float32, "/battery_level", 10)
         self.create_timer(1.0, self.publish_battery)
 
-        self.get_logger().info("battery_node started")
+        self.get_logger().info(
+            f"battery_node started (discharge_rate={self.discharge_rate:.2f}%/s)"
+        )
 
     def publish_battery(self) -> None:
-        self.level = max(0.0, self.level - 1.0)
+        self.level = max(0.0, self.level - self.discharge_rate)
 
         msg = Float32()
         msg.data = float(self.level)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 
 import rclpy
 from rclpy.node import Node
@@ -12,11 +12,19 @@ class RobotController(Node):
         self.current_status = "CRITICAL"
         self.current_mode = None
 
+        self.declare_parameter("max_speed", 0.3)
+        self.max_speed = float(self.get_parameter("max_speed").value)
+        if self.max_speed < 0.0:
+            self.get_logger().warning("max_speed < 0.0, reset to 0.0")
+            self.max_speed = 0.0
+
         self.publisher = self.create_publisher(Twist, "/cmd_vel", 10)
         self.create_subscription(String, "/robot_status", self.status_callback, 10)
         self.create_timer(0.1, self.publish_cmd_vel)
 
-        self.get_logger().info("robot_controller started")
+        self.get_logger().info(
+            f"robot_controller started (max_speed={self.max_speed:.2f} m/s)"
+        )
         self.update_mode_from_status(self.current_status)
 
     def status_callback(self, msg: String) -> None:
@@ -43,7 +51,7 @@ class RobotController(Node):
         cmd = Twist()
 
         if self.current_mode == "ALL_OK_MOVE":
-            cmd.linear.x = 0.3
+            cmd.linear.x = self.max_speed
             cmd.angular.z = 0.0
         elif self.current_mode == "LOW_BATTERY_SLOW":
             cmd.linear.x = 0.1
