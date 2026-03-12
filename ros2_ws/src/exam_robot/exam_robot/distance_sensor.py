@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import random
-
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32
@@ -11,7 +9,7 @@ from geometry_msgs.msg import Twist
 class DistanceSensor(Node):
     def __init__(self):
         super().__init__("distance_sensor")
-        self.distance = 2.5
+        self.distance = 3.0
         self.linear_x = 0.0
 
         self.publisher = self.create_publisher(Float32, "/distance", 10)
@@ -24,22 +22,18 @@ class DistanceSensor(Node):
         self.linear_x = msg.linear.x
 
     def publish_distance(self) -> None:
-        if self.linear_x > 0.01:
-            self.distance -= 0.03
+        if self.linear_x == 0.0:
+            self.distance = 3.0
+        elif self.linear_x > 0.0:
+            self.distance -= 0.2
         else:
-            self.distance += 0.01
+            self.distance += 0.2
 
-        self.distance += random.uniform(-0.01, 0.01)
-        self.distance = max(0.2, min(3.0, self.distance))
-
-        if self.distance <= 0.25:
-            self.distance = 2.0
+        self.distance = max(0.5, min(3.0, self.distance))
 
         msg = Float32()
         msg.data = float(self.distance)
         self.publisher.publish(msg)
-
-        self.get_logger().info(f"distance={self.distance:.2f} m")
 
 
 def main(args=None):
@@ -52,4 +46,3 @@ def main(args=None):
 
 if __name__ == "__main__":
     main()
-
